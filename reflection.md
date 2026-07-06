@@ -14,8 +14,10 @@ Scheduler is responsible for the algorithmic logic that spans the whole system �
 
 **b. Design changes**
 - Did your design change during implementation?
+Yes, my design changed after reviewing the AI's feedback on my initial skeleton. One significant change was adding a back-reference from Task to its owning Pet, along with a duration_mins attribute.gap and let the Scheduler's logic work as intended.
 - If yes, describe at least one change and why you made it.
-
+In my original design, Task only stored a time: datetime with no link back to which pet it belonged to and no sense of how long it lasted. This worked fine for a single flat list of tasks, but it broke down in two places: Scheduler.detect_conflicts() and get_todays_tasks() returned bare Task objects with no way to say "this is Luna's walk," which the UI needs to display; and conflicts_with() could only check for exact-time collisions since it had no duration to compare against, making real overlap detection (e.g., a 30-minute walk clashing with a vet visit starting 15 minutes later) impossible.
+I made this change because without it, two of my core algorithmic features — conflict detection and generating a readable "today's tasks" view — couldn't actually be implemented correctly. Adding pet and duration_mins to Task closed that 
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
