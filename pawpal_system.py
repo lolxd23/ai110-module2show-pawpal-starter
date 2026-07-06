@@ -139,18 +139,20 @@ class Pet:
     def get_upcoming_tasks(self) -> List[Task]:
         """Return this pet's incomplete tasks, ordered by time.
 
-        TODO: not yet implemented.
-
         Returns:
             This pet's tasks where completed is False, sorted earliest to
             latest by time.
 
         Note:
-            Intended to be O(n log n) once implemented (filter this pet's
-            own tasks, then sort) - n here is just this pet's task count,
-            not every task in the system.
+            O(n log n) - filters this pet's own tasks, then sorts. n here
+            is just this pet's task count, not every task in the system.
+            sorted() is stable, so tasks with equal times keep their
+            original insertion order.
         """
-        pass
+        return sorted(
+            (t for t in self.tasks if not t.completed),
+            key=lambda t: t.time,
+        )
 
 
 class Owner:
@@ -334,6 +336,7 @@ class Scheduler:
 
         next_task = task.next_occurrence(new_task_id=self._next_task_id())
         pet.add_task(next_task)
+        task.is_recurring = False  # this occurrence has already spawned its follow-up
         return next_task
 
     def _next_task_id(self) -> int:
@@ -454,14 +457,24 @@ class Scheduler:
     def handle_recurrence(self) -> None:
         """Generate and reattach the next occurrence of each due recurring task.
 
-        TODO: not yet implemented.
+        A task qualifies once it's completed, is_recurring is True, and it
+        has a recurrence_interval set. After generating its follow-up, the
+        original task's is_recurring flag is flipped to False so a repeated
+        call to handle_recurrence() won't spawn a second follow-up for the
+        same completed task - that's what makes this method idempotent.
 
         Returns:
             None.
 
         Note:
-            Intended to be O(n) once implemented - one pass over every task
-            to find due recurring ones, then one next_occurrence() call
-            (O(1)) per match.
+            O(n) - one pass over every task to find due recurring ones,
+            then one next_occurrence() call (O(1)) per match.
         """
-        pass
+        for task in self.owner.get_all_tasks():
+            if task.completed and task.is_recurring and task.recurrence_interval is not None:
+                pet = self.owner.get_pet(task.pet_id)
+                if pet is None:
+                    continue
+                next_task = task.next_occurrence(new_task_id=self._next_task_id())
+                pet.add_task(next_task)
+                task.is_recurring = False  # prevents regenerating on a later call

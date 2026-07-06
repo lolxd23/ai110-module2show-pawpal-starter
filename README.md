@@ -47,10 +47,11 @@ pip install -r requirements.txt
 Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
 
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
+Today's Schedule for Jordan
+----------------------------------------
+07:30 AM  Luna     Walk       (HIGH)
+12:00 PM  Milo     Grooming   (LOW)
+06:00 PM  Luna     Feeding    (MEDIUM)
 #   ...
 ```
 
@@ -80,6 +81,15 @@ Sample test output:
 | Filtering | | e.g., skip tasks if time runs out |
 | Conflict handling | | e.g., overlapping time slots |
 | Recurring tasks | | e.g., daily vs. weekly |
+
+## 📐 Smarter Scheduling
+
+| Feature | Method(s) | Notes |
+|---------|-----------|-------|
+| Task sorting | `Scheduler.sort_by_priority()` | Orders tasks by priority level (high to low) so the most urgent care tasks appear first in the daily plan. |
+| Filtering | `Scheduler.get_todays_tasks()` | Filters the full task list down to only tasks due today across all pets. `Pet.get_upcoming_tasks()` is stubbed but not yet implemented. |
+| Conflict handling | `Scheduler.check_conflicts()`, `Scheduler.detect_conflicts()` | `check_conflicts()` runs an O(n) check when a single task is added, comparing it against existing tasks. `detect_conflicts()` runs a sweep-line pass (O(n log n)) to generate a full conflict report across all tasks at once. |
+| Recurring tasks | `Task.is_recurring`, `Task.recurrence_interval` | Recurring tasks are flagged with these attributes (e.g. daily/weekly), but `Scheduler.handle_recurrence()` — which would generate the next occurrence when a recurring task is completed — is currently a stub and not yet implemented. |
 
 ## 📸 Demo Walkthrough
 

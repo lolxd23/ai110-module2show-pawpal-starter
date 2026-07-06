@@ -31,6 +31,8 @@ I made this change because without it, two of my core algorithmic features — c
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+One tradeoff in my scheduler is around conflict detection. I currently have two separate methods that both check for task overlaps: check_conflicts(), which runs in O(n) and is used whenever a single task is added, and detect_conflicts(), which uses a sweep-line approach running in O(n log n) to generate a full conflict report across all tasks. Both methods implement essentially the same "does task A overlap task B" logic, just through different traversal strategies — which works fine individually, but makes the file harder to scan since the same core logic is duplicated in two places.
+When I asked my AI coding assistant how this could be simplified for readability, it suggested having detect_conflicts() just call check_conflicts() for each task and dedupe the resulting pairs, collapsing the logic into a single code path. I considered this, but decided against fully adopting it: it would trade away the sweep-line's early-break optimization, dropping full system-wide conflict reports back to O(n²) instead of O(n log n). For a single owner managing a handful of pets, this performance difference is negligible in practice — task counts will stay small — so the readability gain probably outweighs the performance cost. This is the kind of tradeoff I'm still weighing: keep two clean, purpose-built traversals, or accept a slightly less optimal but more unified/readable implementation.
 
 ---
 
