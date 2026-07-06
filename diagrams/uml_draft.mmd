@@ -1,0 +1,78 @@
+classDiagram
+    class Owner {
+        -owner_id: int
+        -name: str
+        -contact_info: str
+        -preferences: dict
+        -pets: List~Pet~
+        +add_pet(pet: Pet) None
+        +remove_pet(pet_id: int) None
+        +get_pet(pet_id: int) Pet
+    }
+
+    class Pet {
+        -pet_id: int
+        -name: str
+        -species: str
+        -age: int
+        -tasks: List~Task~
+        +add_task(task: Task) None
+        +remove_task(task_id: int) None
+        +get_incomplete_tasks() List~Task~
+    }
+
+    class Task {
+        -task_id: int
+        -title: str
+        -due_time: datetime
+        -duration_mins: int
+        -priority: Priority
+        -is_completed: bool
+        -frequency: str
+        -is_flexible: bool
+        +mark_complete() None
+        +get_end_time() datetime
+        +overlaps_with(other: Task) bool
+        +next_occurrence() Task
+    }
+
+    class Medication {
+        -medication_name: str
+        -dosage: str
+        -refill_date: datetime
+        -requires_food: bool
+        +is_refill_needed() bool
+    }
+
+    class Appointment {
+        -location: str
+        -provider_name: str
+        -appointment_type: str
+        -travel_buffer_mins: int
+        +get_departure_time() datetime
+    }
+
+    class Priority {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+    }
+
+    class Scheduler {
+        -pets: List~Pet~
+        +add_pet(pet: Pet) None
+        +get_all_tasks() List~Task~
+        +sort_by_priority(tasks: List~Task~) List~Task~
+        +check_conflicts(new_task: Task) bool
+        +generate_daily_plan(target_date: date) List~Task~
+        +generate_recurring_tasks() None
+        +explain_plan(plan: List~Task~) List~str~
+    }
+
+    Owner "1" --> "many" Pet : owns
+    Pet "1" --> "many" Task : has
+    Task <|-- Medication
+    Task <|-- Appointment
+    Task --> Priority : uses
+    Scheduler "1" --> "many" Pet : operates across
