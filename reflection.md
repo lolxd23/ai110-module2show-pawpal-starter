@@ -40,13 +40,15 @@ When I asked my AI coding assistant how this could be simplified for readability
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used AI throughout the full lifecycle of this project — not just for writing code, but for design review, implementation, and debugging. In the design phase, I used AI to help brainstorm and sketch the initial UML relationships between Owner, Pet, Task, and Scheduler, then had it generate the Python class skeleton (using dataclasses for Task and Pet) once the design was settled. Later, I gave AI my completed skeleton and asked it to review it for missing relationships and logic bottlenecks — this surfaced real gaps I hadn't caught, like the missing `pet` back-reference on `Task` and the lack of a `duration_mins` field, both of which were blocking correct conflict detection. I also used AI heavily for debugging: when my test suite failed with `AssertionError: assert None == []`, AI helped me trace it down to two unimplemented stub methods, and when a fix I thought I'd applied still wasn't taking effect, AI helped me systematically check whether I was actually running the file I thought I was (which turned out to be exactly the issue — a stale copy of `pawpal_system.py` was being imported instead of my edited one).
+
+The most helpful prompts were ones where I gave AI my actual code and asked it to check it against something concrete — "review this skeleton for missing relationships" or "here's my failing test output, why is this happening" — rather than vague requests like "help me build a scheduler." Attaching real files and real error output got far more useful, specific answers than describing the problem abstractly.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+One clear moment I didn't accept an AI suggestion as-is was around simplifying my conflict-detection logic. I have two methods — `check_conflicts()` (an O(n) check run when a single task is added) and `detect_conflicts()` (an O(n log n) sweep-line pass for a full system report) — that both implement similar overlap logic through different traversal strategies. When I asked AI how this could be simplified for readability, it suggested collapsing `detect_conflicts()` into a wrapper that just calls `check_conflicts()` per task. I considered this, but decided against it: doing so would trade away the sweep-line's early-break optimization, dropping full system-wide reports from O(n log n) back to O(n²). Since task counts for a single owner's pets will stay small, I judged the performance cost to be negligible, but I still weighed it deliberately rather than just taking the "cleaner" version at face value.
+
+I verified AI's suggestions primarily through my test suite — for example, after AI implemented `handle_recurrence()`, I didn't just trust that it worked; I ran the actual pytest suite against it and traced every failure back to root cause (in one case, discovering the issue was environmental — a stale cached file — not a logic bug at all, which taught me not to assume every test failure means the code is wrong).
 
 ---
 
@@ -54,13 +56,13 @@ When I asked my AI coding assistant how this could be simplified for readability
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+I tested the core scheduling behaviors in `pawpal_system.py`: filtering a pet's incomplete tasks and sorting them by time (including edge cases like an empty task list, tasks with identical times needing stable insertion-order preservation, and making sure one pet's tasks don't leak into another pet's list), and the recurring-task logic in `handle_recurrence()` — generating correct next occurrences for daily and weekly intervals, correctly rolling a date over a month boundary, assigning unique task IDs when multiple recurring tasks are due at once, remaining idempotent so repeated calls don't duplicate follow-up tasks, and gracefully skipping a task if its owning pet no longer exists in the system.
+
+These tests mattered because they covered the exact places where the logic was easy to get subtly wrong: date arithmetic across month boundaries, mutation during iteration, and idempotency are all classic sources of silent bugs that a quick manual check wouldn't catch.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+I'm confident (about 4 out of 5 stars) that the parts of the scheduler I tested — filtering, sorting by time, and recurrence — work correctly, since all 16 tests pass and they cover meaningful edge cases rather than just happy-path behavior. I'm less confident about `check_conflicts()`, `detect_conflicts()`, and `sort_by_priority()`, since none of those currently have dedicated tests. If I had more time, I'd test: overlapping tasks that share an exact boundary (task A ends exactly when task B starts — should that count as a conflict?), conflict detection across multiple pets versus within a single pet, priority sorting stability when multiple tasks share the same priority level, and what happens when `duration_mins` is zero or negative.
 
 ---
 
@@ -68,12 +70,12 @@ When I asked my AI coding assistant how this could be simplified for readability
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I'm most satisfied with how the recurrence logic turned out, specifically the idempotency handling. It would have been easy to write `handle_recurrence()` in a way that silently generated duplicate follow-up tasks every time it ran, and catching that required thinking carefully about state (flipping `is_recurring` to `False` after generating a follow-up) rather than just making the happy path work.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+If I had another iteration, I'd finish wiring the backend's full feature set into the Streamlit UI — right now `app.py` calls `get_todays_tasks()` for the schedule view, but doesn't expose `sort_by_priority()`, `detect_conflicts()`, or `complete_task()`/`handle_recurrence()` through any UI element, even though all of that logic exists and is tested in `pawpal_system.py`. I'd also add dedicated tests for conflict detection and priority sorting, since those are currently the least-verified parts of the system.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+One important thing I learned is that AI-assisted debugging is only as good as your ability to verify the environment you're actually running in — I spent a real chunk of time believing a fix hadn't worked, when the actual problem was that Python was importing a stale, un-updated copy of the file. AI could point me toward the right diagnostic commands, but confirming *which* file was actually executing required me to check it directly rather than just re-reading the code and assuming it was correct.

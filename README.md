@@ -68,7 +68,31 @@ pytest --cov
 Sample test output:
 
 ```
-# Paste your pytest output here
+python -m pytest
+========================== test session starts ==========================
+platform darwin -- Python 3.12.4, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/hajramuzammal/module 2/ai110-module2show-pawpal-starter
+plugins: anyio-4.14.1
+collected 16 items                                                      
+
+tests/test_pawpal.py ................                             [100%]
+
+========================== 16 passed in 0.02s ===========================
+(.venv) (base) hajramuzammal@Hajras-MacBook-Air ai110-module2show-pawpal-starter % python -m pytest
+================= test session starts ==================
+platform darwin -- Python 3.12.4, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/hajramuzammal/module 2/ai110-module2show-pawpal-starter
+plugins: anyio-4.14.1
+collected 16 items                                     
+
+tests/test_pawpal.py ................            [100%]
+
+================== 16 passed in 0.02s ==================
+
+Description:
+Ran the full test suite (16 tests) covering task filtering, sorting by time, and recurring task generation, including edge cases like empty task lists, ties on identical times, and idempotency across repeated calls. All 16 tests passed.
+Confidence Level: ⭐⭐⭐⭐☆ (4/5)
+Core scheduling logic is well-tested, but conflict detection and priority sorting don't have dedicated tests yet, so I'm holding back one star until those are covered too.
 ```
 
 ## 📐 Smarter Scheduling
@@ -93,12 +117,10 @@ Sample test output:
 
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
-
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+1. **Enter your name as the owner.** On launch, the app asks for the owner's name (defaults to "Jordan"). This creates an `Owner` object that persists across the session.
+2. **Add a pet.** Enter a pet's name, species, and age, then click "Add pet." The pet is attached to the owner and appears in a table of current pets below the form.
+3. **Schedule a task for that pet.** Select the pet, enter a task type (e.g. "Morning walk"), a time, a duration in minutes, and a priority level (low/medium/high), then click "Add task." The task is attached to the selected pet via `Scheduler.add_task()`. If the new task's time overlaps with an existing task, a conflict warning appears automatically.
+4. **Review all scheduled tasks.** Every task added so far — across all pets — appears in a table showing the pet, task type, time, duration, and priority.
+5. **Generate today's schedule.** Click "Generate schedule" to see only the tasks due today, sorted earliest to latest, in a clean daily-plan table showing time, pet, task type, and priority.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->

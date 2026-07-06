@@ -1,15 +1,72 @@
 classDiagram
-    %% Replace the placeholders below with your actual classes, attributes, methods, and relationships.
-    %% Keep this file updated so it matches your final implementation.
+    %% Final design - reflects the implementation in pawpal_system.py.
+    %% See uml_draft.mmd for the initial design this evolved from.
 
-    class ClassName {
-        +type attribute
-        +method() returnType
+    class Owner {
+        -owner_id: int
+        -name: str
+        -pets: List~Pet~
+        +add_pet(pet: Pet) None
+        +get_pet(pet_id: int) Pet
+        +get_all_tasks() List~Task~
     }
 
-    class AnotherClass {
-        +type attribute
-        +method() returnType
+    class Pet {
+        -pet_id: int
+        -name: str
+        -species: str
+        -age: int
+        -tasks: List~Task~
+        +add_task(task: Task) None
+        +get_upcoming_tasks() List~Task~
     }
 
-    ClassName --> AnotherClass : relationship
+    class Task {
+        -task_id: int
+        -task_type: str
+        -time: datetime
+        -duration_mins: int
+        -priority: Priority
+        -is_recurring: bool
+        -recurrence_interval: RecurrenceInterval
+        -completed: bool
+        -pet_id: int
+        +mark_complete() None
+        +is_due_today(reference_date: date) bool
+        +conflicts_with(other_task: Task) bool
+        +next_occurrence(new_task_id: int) Task
+    }
+
+    class Priority {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+    }
+
+    class RecurrenceInterval {
+        <<enumeration>>
+        DAILY
+        WEEKLY
+    }
+
+    class Scheduler {
+        -owner: Owner
+        +add_task(pet: Pet, task: Task) List~str~
+        +check_conflicts(new_task: Task) List~str~
+        +complete_task(task: Task) Task
+        -_next_task_id() int
+        +sort_by_priority() List~Task~
+        +sort_by_time() List~Task~
+        +filter_tasks(completed: bool, pet_name: str) List~Task~
+        +detect_conflicts() List~Tuple~
+        +get_todays_tasks() List~Task~
+        +handle_recurrence() None
+    }
+
+    Owner "1" --> "many" Pet : owns
+    Pet "1" --> "many" Task : has
+    Task --> Priority : uses
+    Task --> RecurrenceInterval : uses
+    Task --> Pet : pet_id (back-reference)
+    Scheduler "1" --> "1" Owner : operates over
